@@ -101,6 +101,19 @@ pub fn paste_image_to_temp_png() -> Result<(PathBuf, PastedImageInfo), PasteImag
     Ok((path, info))
 }
 
+/// Windows-only: try to fetch clipboard text for paste fast path.
+/// On non-Windows platforms, returns None so code paths remain unchanged.
+#[cfg(windows)]
+pub fn clipboard_text_fastpath() -> Option<String> {
+    // Best-effort: if clipboard is unavailable or empty, fall back silently.
+    arboard::Clipboard::new().ok()?.get_text().ok()
+}
+
+#[cfg(not(windows))]
+pub fn clipboard_text_fastpath() -> Option<String> {
+    None
+}
+
 /// Normalize pasted text that may represent a filesystem path.
 ///
 /// Supports:
